@@ -16,10 +16,6 @@
       font-family: arial;
     }
 
-    #map {
-      margin: auto;
-      text-align: center;
-    }
 
     .hidden {
       display: none;
@@ -35,10 +31,10 @@
       position: absolute;
     }
 
-    .slider_div {
+    /* .slider_div {
       margin: auto;
       width: 30%;
-    }
+    } */
   </style>
 </head>
 
@@ -147,7 +143,7 @@
           }
           tooltip.classed('hidden', false)
             .attr('style', 'left:' + (mouse[0] + 15) +
-              'px; top:' + (mouse[1] - 35) + 'px')
+              'px; top:' + (mouse[1] + 85) + 'px')
             .html(content);
         })
     }
