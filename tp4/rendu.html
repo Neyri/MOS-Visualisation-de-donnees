@@ -104,9 +104,9 @@
             var mouse = d3.mouse(svg.node()).map(function(d) {
               return parseInt(d);
             });
-            content = d.properties.nom
+            content = d.properties.nom + "<br/>No data"
             if (d.data) {
-              content += "<br/>" + d.data[0]
+              content = d.properties.nom + "<br/>" + d.data[0]
             }
             tooltip.classed('hidden', false)
               .attr('style', 'left:' + (mouse[0] + 15) +
@@ -137,9 +137,9 @@
           var mouse = d3.mouse(svg.node()).map(function(d) {
             return parseInt(d);
           });
-          content = d.properties.nom
+          content = d.properties.nom + "<br/>No data"
           if (d.data) {
-            content += "<br/>" + d.data[weekNb]
+            content = d.properties.nom + "<br/>" + d.data[weekNb - 1]
           }
           tooltip.classed('hidden', false)
             .attr('style', 'left:' + (mouse[0] + 15) +
