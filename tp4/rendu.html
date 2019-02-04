@@ -9,12 +9,16 @@
 
   <style>
     body {
-      margin: 0;
-      position: fixed;
-      top: 0;
-      right: 0;
-      bottom: 0;
-      left: 0;
+      width: 95%;
+      background-color: #333;
+      color: #ccc;
+      margin: auto;
+      font-family: arial;
+    }
+
+    #map {
+      margin: auto;
+      text-align: center;
     }
 
     .hidden {
@@ -30,19 +34,28 @@
       opacity: 0.9;
       position: absolute;
     }
+
+    .slider_div {
+      margin: auto;
+      width: 30%;
+    }
   </style>
 </head>
 
 <body>
-  <div id="slider_div">
-    <input id="slider" type="range" value="1" min="1" max="52" step="1" />
-    <span id="week">Week 1</span>
+  <h1>Carte de l'évolution de l'épidémie de grippe en France en 2014.</h1>
+  <p>Voici la carte</p>
+  <div id="map">
+    <div class="slider_div">
+      <input id="slider" type="range" value="1" min="1" max="52" step="1" />
+      <span id="week">Week 1</span>
+    </div>
   </div>
   <script>
     var width = 700,
-      height = 580;
+      height = 500;
 
-    var svg = d3.select("body")
+    var svg = d3.select("#map")
       .append("svg")
       .attr("width", width)
       .attr("height", height);
@@ -101,11 +114,14 @@
             }
             tooltip.classed('hidden', false)
               .attr('style', 'left:' + (mouse[0] + 15) +
-                'px; top:' + (mouse[1] - 35) + 'px')
+                'px; top:' + (mouse[1] + 85) + 'px')
               .html(content);
+            console.log(d3.select(this).attr('left'))
+            d3.select(this).attr('stroke', '#aaa')
           })
           .on('mouseout', function() {
             tooltip.classed('hidden', true);
+            d3.select(this).attr('stroke', 'none')
           });
 
       });
