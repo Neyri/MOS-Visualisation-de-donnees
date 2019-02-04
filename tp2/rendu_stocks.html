@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+
+<head>
+  <meta charset="utf-8">
+  <script src="https://d3js.org/d3.v4.min.js"></script>
+  <style>
+    rect {
+      stroke: #ccc;
+      stroke-width: 1;
+    }
+
+    body {
+      background-color: #333;
+      color: #ccc;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Premier essai de graphique</h1>
+  <p>Voici le graph</p>
+  <div id="graph"></div>
+  <script>
+    // Create the svg
+    var width = 960;
+    var height = 500;
+    var svg = d3.select("#graph").append("svg")
+      .attr("width", width)
+      .attr("height", height);
+
+    var gGraph = svg.append("g")
+      .attr("id", "lines")
+    // .attr("width", width)
+    // .attr("height", height);
+
+    // Generate data
+    var data = d3.range(30)
+      .map(Math.random);
+
+    var timeParser = d3.timeParse("%b %Y");
+
+    d3.csv('stocks.csv', function(e, raw) {
+      data = {};
+      for (row of raw) {
+        if (!data[row.symbol]) {
+          data[row.symbol] = {}
+          data[row.symbol]['x'] = []
+          data[row.symbol]['y'] = []
+        }
+        data[row.symbol]['x'].push(timeParser(row['date']))
+        data[row.symbol]['y'].push(Number(row['price']))
+      }
+      main()
+    })
+
+    function main() {
+      // scale data that goes from 0 to max(data) to 0 to height
+      // y(value) returns the scaled value
+      var bottom = 50
+      var xmin = 30;
+      var xmax = width - 10;
+      var ymin = 50;
+      var ymax = height - 50;
+      var y = d3.scaleLinear()
+        .domain([0, d3.max(data['AAPL']['y'])])
+        .range([ymax, ymin]);
+
+      var x = d3.scaleBand()
+        .domain(d3.range(data['AAPL']['x'].length + 1)) //d3.extent(data, (d) => d['AAPL']['x']))
+        .range([xmin, xmax])
+      // .paddingInner(0.1);
+
+      var tmin = d3.min(data['AAPL']['x'])
+      var tmax = d3.max(data['AAPL']['x'])
+      var t = d3.scaleTime()
+        .domain([tmin, tmax])
+        .range([xmin, xmax])
+
+      console.log(t(new Date(2000, 0, 1)))
+
+      var color = d3.scaleOrdinal(d3.schemeCategory20)
+
+      var xAxis = d3.axisBottom(t)
+        .ticks(d3.timeYear);
+      // .orient("bottom")
+      // .ticks(data['AAPL']['x']);
+      var yAxis = d3.axisLeft(y)
+      // .ticks(d3.timeYear);
+
+      // Bind data
+
+      var line = d3.line()
+        .x((d, i) => x(i + 1))
+        .y((d, i) => y(d));
+
+      // comme on veut 1 ligne on met data entre crochet (on ne passera qu'une fois dans les data)
+      for (stock of Object.keys(data)) {
+        gGraph.selectAll("#" + stock).data([data[stock]['y']]).enter()
+          .append("path")
+          .attr("class", "line")
+          .attr("d", line)
+          .attr("stroke", color(stock))
+          .attr("fill", "none");
+      }
+
+      svg.append("g")
+        .attr("transform", "translate(" + 0 + ", " + ymax + ")")
+        .attr("class", "x axis")
+        .call(xAxis);
+
+      svg.append("g")
+        .attr("transform", "translate(" + (xmin) + ", " + 0 + ")")
+        .attr("class", "y axis")
+        .call(yAxis);
+      // svg.selectAll("rect")
+      //   .data(data).enter()
+      //   .append("rect")
+      //   .attr("x", (d, i) => x(i))
+      //   .attr("y", (d, i) => height - y(d) - bottom)
+      //   .attr("width", (d, i) => x.bandwidth())
+      //   .attr("height", (d, i) => y(d))
+      //   .attr("fill", (d, i) => color(i))
+      //   .on("mouseover", function(d, i) {
+      //     d3.select(this).attr("fill", "red");
+      //     this.text = svg.append("text")
+      //       .attr("x", x(i))
+      //       .attr("y", height - y(d) - 2 - bottom)
+      //       .text(d);
+      //
+      //   })
+      //   .on("mouseleave", function(d, i) {
+      //     d3.select(this).attr("fill", color(i))
+      //     this.text.remove()
+      //   });
+    }
+  </script>
+</body>

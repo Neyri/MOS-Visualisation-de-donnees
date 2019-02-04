@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+
+<head>
+  <meta charset="utf-8">
+  <script src="https://d3js.org/d3.v4.min.js"></script>
+
+  <style>
+    body {
+      background-color: #333;
+      color: #ccc;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Grouped bar chart chart using the stocks.csv</h1>
+  <p>Voici le graph</p>
+  <div id="graph"></div>
+  <script>
+    // Create the svg
+    var width = 960;
+    var height = 500;
+    var svg = d3.select("#graph").append("svg")
+      .attr("width", width)
+      .attr("height", height);
+
+    var gBars = svg.append("g")
+      .attr("id", "bars")
+
+    // Generate data
+    var data;
+
+    var timeParser = d3.timeParse("%b %Y");
+
+    d3.csv('stocks.csv', function(e, raw) {
+      data = d3.nest()
+        .key(d => d.symbol)
+        .key(function(d) {
+          date = new Date(d.date)
+          return date.getYear() + 1900;
+        })
+        .rollup(v => d3.mean(v, d => d.price))
+        .entries(raw);
+      console.log(data)
+      main()
+    })
+
+    function main() {
+      var bottom = 50
+      var xmin = 30;
+      var xmax = width - 10;
+      var ymin = 20;
+      var ymax = height - 50;
+      var margin = 10
+      var max_year = d3.max(data, d => d3.max(d.values, f => Number(f.key)))
+      var min_year = d3.min(data, d => d3.min(d.values, f => Number(f.key)))
+      var max_price = d3.max(data, d => d3.max(d.values, e => e.value))
+      var y = d3.scaleLinear()
+        .domain([0, max_price])
+        .range([ymax, ymin]);
+
+      var x = d3.scaleBand()
+        .domain(d3.range(min_year, max_year + 1))
+        .range([xmin, xmax])
+
+      console.log(x.bandwidth())
+
+
+      var color = d3.scaleOrdinal(d3.schemeCategory20)
+
+      var xAxis = d3.axisBottom(x)
+      var yAxis = d3.axisLeft(y)
+
+      var bandwidth = (x.bandwidth()) / 4 - margin
+      for (var i = 0; i < data.length; i++) {
+        var stock_data = data[i]
+        stock = stock_data['key']
+        gStock = gBars.append("g")
+          .attr("id", stock_data.key)
+        gStock.selectAll("#" + stock).data(stock_data['values']).enter()
+          .append("rect")
+          .attr("width", bandwidth)
+          .attr("height", (d, i) => ymax - y(d.value))
+          .attr("x", (d, j) => x(Number(d.key)) + bandwidth * i + margin * 2)
+          .attr("y", (d, i) => y(d.value))
+          .attr("fill", color(stock))
+          .attr("stroke", "none");
+      }
+
+      svg.append("g")
+        .attr("transform", "translate(" + 0 + ", " + ymax + ")")
+        .attr("class", "x axis")
+        .call(xAxis);
+
+      svg.append("g")
+        .attr("transform", "translate(" + (xmin) + ", " + 0 + ")")
+        .attr("class", "y axis")
+        .call(yAxis);
+
+      var legend = svg.selectAll(".legend")
+        .data(color.domain())
+        .enter().append("g")
+        .attr("class", "legend")
+        .attr("transform", function(d, i) {
+          return "translate(" + (i * 80 + xmin) + ",30)";
+        });
+
+      legend.append("rect")
+        .attr("x", 30)
+        .attr("width", 18)
+        .attr("height", 18)
+        .style("fill", color);
+
+      legend.append("text")
+        .attr("x", 50)
+        .attr("y", 9)
+        .attr("dy", ".35em")
+        .style("text-anchor", "start")
+        .text(d => d)
+        .attr("fill", "#ccc");
+    }
+  </script>
+</body>
