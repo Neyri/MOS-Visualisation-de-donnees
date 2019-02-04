@@ -1,6 +1,5 @@
-# Git du cours de Visualisation intéractive de données 
+# Git du cours de Visualisation intÃ©ractive de donnÃ©es
 
 Dans ce repo, on retrouve mes notes de cours et mes rendus de TP.
 
-Il sont disponible à l'adresse suivante (bien penser à remplacer `num_tp` dans l'url par le numéro du tp désiré) : [https://neyri.github.io/MOS-Visualisation-de-donnees/tp*num_tp*/rendu.html](https://neyri.github.io/MOS-Visualisation-de-donnees/tp4/rendu.html)
-
+Il sont disponible Ã  l'adresse suivante (bien penser Ã  remplacer `num_tp` dans l'url par le numÃ©ro du tp dÃ©sirÃ©) : [https://neyri.github.io/MOS-Visualisation-de-donnees/tp*num_tp*/rendu.html](https://neyri.github.io/MOS-Visualisation-de-donnees/tp4/rendu.html)
