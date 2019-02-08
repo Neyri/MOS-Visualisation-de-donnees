@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>Homework 2 GitHub Network Graphs</title>
+<style>
+  .link {
+    stroke: gray;
+    stroke-width: 1.5px;
+  }
+
+  .node {
+    fill: #66CC66;
+    stroke: #000;
+    stroke-width: 1px;
+  }
+
+  .node:hover {
+    fill: red;
+  }
+</style>
+
+<body>
+  <script src="https://d3js.org/d3.v4.min.js"></script>
+
+  <form>
+    Layout:
+    <label><input type="radio" name="layout" value="force" checked> Force</label>
+    <label><input type="radio" name="layout" value="random" > Random</label>
+    <label><input type="radio" name="layout" value="radial"> Radial</label>
+    <label><input type="radio" name="layout" value="line"> Line</label>
+    <label><input type="radio" name="layout" value="line_cat"> Line by Category</label>
+  </form>
+
+  <form>
+    Color:
+    <label><input type="radio" name="color" value="nocolor" checked> None</label>
+    <label><input type="radio" name="color" value="color_cat" > Category</label>
+  </form>
+
+  <form>
+    Size:
+    <label><input type="radio" name="size" value="nosize" checked> None</label>
+    <label><input type="radio" name="size" value="size_cat" > Category</label>
+  </form>
+  <script>
+    var width = 900,
+      height = 700;
+
+    var svg = d3.select("body").append("svg")
+      .attr("width", width)
+      .attr("height", height);
+
+    var link = svg.selectAll(".link"),
+      node = svg.selectAll(".node");
+
+    var simulation;
+    var color = d3.scaleOrdinal(d3.schemeCategory10);
+
+    // Init graph data structure
+    var graph = {
+      nodes: [],
+      links: []
+    };
+
+    // Generate random nodes
+    var nb_nodes = 100;
+    var nb_cat = 10;
+    graph.nodes = d3.range(nb_nodes).map(function() {
+      return {
+        'cat': Math.floor(Math.random() * nb_cat)
+      };
+    })
+
+    graph.nodes.map(function(d, i) {
+      graph.nodes.map(function(e, j) {
+        if (Math.random() > .99 && i != j)
+          graph.links.push({
+            "source": i,
+            "target": j
+          })
+
+      });
+    });
+
+    function force_layout() {
+
+      simulation = d3.forceSimulation(graph.nodes)
+        .force("link", d3.forceLink(graph.links).id(d => d.index))
+        .force("charge", d3.forceManyBody())
+        .force("center", d3.forceCenter(width / 2, height / 2));
+
+      simulation.on("tick", function() {
+        graph_update(0)
+      });
+
+    }
+
+    function random_layout() {
+      // TODO: each node should have a random position
+      simulation.stop();
+
+      for (var i = 0; i < graph.nodes.length; i++) {
+        graph.nodes[i].x = Math.random() * width;
+        graph.nodes[i].y = Math.random() * height;
+        graph.nodes[i].vx = 0;
+        graph.nodes[i].vy = 0;
+      }
+      graph_update(500)
+    }
+
+    function line_layout() {
+      // TODO: each node should be aligned horizontally
+      simulation.stop();
+      var n = graph.nodes.length;
+      for (var i = 0; i < n; i++) {
+        graph.nodes[i].x = 5 + (width - 5) * i / n;
+        graph.nodes[i].y = height / 2;
+        graph.nodes[i].vx = 0;
+        graph.nodes[i].vy = 0;
+      }
+      graph_update(500)
+    }
+
+    function line_cat_layout() {
+      // TODO: each node should should be aligned but different line for each category
+      simulation.stop();
+      // graph.nodes.sort((d, e) => e['cat'] - d['cat'])
+      var n = graph.nodes.length;
+      for (var i = 0; i < n; i++) {
+        graph.nodes[i].x = 5 + (width - 5) * i / n
+        graph.nodes[i].y = 5 + (height - 5) * graph.nodes[i]['cat'] / nb_cat;
+        graph.nodes[i].vx = 0;
+        graph.nodes[i].vy = 0;
+      }
+      graph_update(500)
+    }
+
+    function radial_layout() {
+      // TODO: radial layout
+      simulation.stop();
+      var radius = Math.min(width / 2, height / 2) - 5;
+      var n = graph.nodes.length;
+      for (var i = 0; i < n; i++) {
+        graph.nodes[i].x = 5 + radius * Math.cos(2 * i * Math.PI / n) + radius;
+        graph.nodes[i].y = 5 + radius * Math.sin(2 * i * Math.PI / n) + radius;
+        graph.nodes[i].vx = 0;
+        graph.nodes[i].vy = 0;
+      }
+      graph_update(500)
+    }
+
+    function category_color() {
+      // TODO: color by nodes category
+      node.selectAll("circle")
+        .style('fill', d => color(d['cat']))
+      graph_update(500)
+    }
+
+    function category_size() {
+      // TODO: size by node category
+      node.selectAll("circle")
+        .attr('r', d => d['cat'] + 1)
+    }
+
+    function graph_update(delay) {
+
+      link.transition().duration(delay)
+        .attr("x1", function(d) {
+          return d.target.x;
+        })
+        .attr("y1", function(d) {
+          return d.target.y;
+        })
+        .attr("x2", function(d) {
+          return d.source.x;
+        })
+        .attr("y2", function(d) {
+          return d.source.y;
+        });
+
+      node.transition().duration(delay)
+        .attr("transform", function(d) {
+          return "translate(" + d.x + "," + d.y + ")";
+        });
+
+    }
+
+    d3.select("input[value=\"force\"]").on("click", force_layout);
+    d3.select("input[value=\"random\"]").on("click", random_layout);
+    d3.select("input[value=\"line\"]").on("click", line_layout);
+    d3.select("input[value=\"line_cat\"]").on("click", line_cat_layout);
+    d3.select("input[value=\"radial\"]").on("click", radial_layout);
+
+    d3.select("input[value=\"nocolor\"]").on("click", function() {
+      d3.selectAll("circle").transition().duration(500).style("fill", "#66CC66");
+    })
+    d3.select("input[value=\"color_cat\"]").on("click", category_color);
+
+    d3.select("input[value=\"nosize\"]").on("click", function() {
+      d3.selectAll("circle").transition().duration(500).attr("r", 5);
+    })
+    d3.select("input[value=\"size_cat\"]").on("click", category_size);
+
+    link = link.data(graph.links)
+      .enter().append("line")
+      .attr("class", "link")
+
+    node = node.data(graph.nodes)
+      .enter().append("g").attr("class", "node");
+
+    node.append("circle")
+      .attr("r", 5)
+
+    force_layout();
+  </script>
+
+</body>
+
+</html>
